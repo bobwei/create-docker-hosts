@@ -5,7 +5,7 @@
 
 curl -fsSL get.docker.com | sh && \
   sudo mkdir -p /etc/docker && sudo cp daemon.json /etc/docker/daemon.json && \
-  sudo cp -r ./certs /var/docker/certs && \
+  sudo mkdir -p /var/docker && sudo cp -r ./certs /var/docker/certs && \
   sudo systemctl start docker && \
   sudo /usr/sbin/usermod -aG docker $USER && \
   sudo su - $USER
