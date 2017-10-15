@@ -32,6 +32,9 @@ set -x
 DAYS=1460
 PASS=$(openssl rand -hex 16)
 DIST=./certs/
+SSL_IP=$(hostname --all-ip-addresses | cut -d ' ' -f 1)
+SSL_CN=$SSL_IP
+
 
 # remove certificates from previous execution.
 rm -f *.pem *.srl *.csr *.cnf
@@ -40,14 +43,16 @@ rm -f *.pem *.srl *.csr *.cnf
 # generate CA private and public keys
 echo 01 > ca.srl
 openssl genrsa -des3 -out ca-key.pem -passout pass:$PASS 2048
-openssl req -subj '/CN=*/' -new -x509 -days $DAYS -passin pass:$PASS -key ca-key.pem -out ca.pem
+openssl req -subj "/CN=$SSL_CN/" -new -x509 -days $DAYS -passin pass:$PASS -key ca-key.pem -out ca.pem
 
 # create a server key and certificate signing request (CSR)
+echo "subjectAltName = IP:$SSL_IP" >> extfile.cnf
+echo extendedKeyUsage = serverAuth >> extfile.cnf
 openssl genrsa -des3 -out server-key.pem -passout pass:$PASS 2048
-openssl req -new -key server-key.pem -out server.csr -passin pass:$PASS -subj '/CN=*/'
+openssl req -new -key server-key.pem -out server.csr -passin pass:$PASS -subj "/CN=$SSL_CN/"
 
 # sign the server key with our CA
-openssl x509 -req -days $DAYS -passin pass:$PASS -in server.csr -CA ca.pem -CAkey ca-key.pem -out server-cert.pem
+openssl x509 -req -days $DAYS -passin pass:$PASS -in server.csr -CA ca.pem -CAkey ca-key.pem -out server-cert.pem -extfile extfile.cnf
 
 # create a client key and certificate signing request (CSR)
 openssl genrsa -des3 -out key.pem -passout pass:$PASS 2048
