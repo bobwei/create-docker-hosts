@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # 1. get docker installation script and run
 # 2. start docker daemon
 # 3. add current user to "docker" group to run docker command without sudo
